@@ -1,0 +1,135 @@
+---
+title: "Day 11 pre-class activity"
+author: "Vince Melfi"
+date: "2/10/2020"
+output: html_document
+---
+
+**Readings:** Complete reading Chapter 6 in R Programming for Data Sciences.
+
+This activity gives practice with some of the `dplyr` basics. This document is adapted from the introductory `dplyr` vignette, which is available at https://cran.r-project.org/web/packages/dplyr/vignettes/dplyr.html. 
+
+**Turn the completed Rmd file, along with the resulting HTML file, to D2L before class on Wednesday.**
+
+First let's set some global options for this R Markdown document.
+
+```{r global_options, echo = TRUE}
+knitr::opts_chunk$set(comment = NA, tidy = TRUE)
+```
+
+We will use a data frame `flights` which is included in the `nycflights13`. So next load both the `dplyr` library and the `nycflights13` library. 
+
+**If you haven't yet installed one or both of these packages, you'll have to do that first. In your console window type `install.packages("dplyr")` and 
+`install.packages("nycflights13")` if needed.**
+
+Now load the libraries.
+
+```{r, message = FALSE}
+library(dplyr)
+library(nycflights13)
+```
+
+First let's look at the data frame `flights`. The following would be dangerous if `flights` were an ordinary data frame, but it is a "tibble" which is described as a "modern reimagining of the data frame."
+
+```{r}
+flights
+```
+
+## `print` and `glimpse`
+
+What if we wanted to see more (or less) than 10 rows of `flights` or wanted to see all the variables? To specify the number of rows displayed we can use a print statement, and specify the number of rows:
+
+```{r}
+print(flights, n = 20)
+```
+
+To see all the variables, use `glimpse`.
+
+```{r}
+glimpse(flights)
+```
+
+## `filter`, `slice`, and `arrange`
+
+The `filter` function filters rows based on specified criteria. It is similar to the `subset` function in base R. For example here we select flights from March which had Detroit Metro Airport as their destination, and assign the result to marchDTW
+
+```{r}
+marchDTW <- filter(flights, month == 3 & dest == "DTW")
+glimpse(marchDTW)
+```
+
+The `filter` function treats multiple conditions that are separated by commas as if they are separated by `&`. 
+
+```{r}
+marchDTW <- filter(flights, month == 3 , dest == "DTW")
+glimpse(marchDTW)
+
+```
+
+**How would you return flights from January which have destination either Detroit Metro (DTW) or Chicago O'Hare (ORD)?**
+
+```{r}
+##Answer here
+janDest <- filter(flights, month == 1, dest == "DTW" | dest == "ORD")
+glimpse(janDest)
+```
+
+The `slice` function selects specified rows. To select the first, third, seventh, and twentieth rows:
+
+```{r}
+slice(flights, c(1, 3, 7, 20))
+```
+
+The `arrange` function reorders rows. For example here we order the dataset first by arrival time and then by carrier.
+
+```{r}
+arrange(flights, arr_time, carrier)
+```
+
+**How would you arrange flights by distance and then by departure delay, with the sorting being in descending order in both cases? (You'll find the `desc` function useful.)**
+
+```{r}
+#arrange flights by distance and then by departure delay, with the sorting being in descending order in both cases
+arrange(flights,distance,dep_delay)
+```
+
+## `select`, `mutate`, and `summarize`
+
+The `select`, `mutate`, and `summarize` functions work with columns. To choose a subset of the existing columns, use `select`. It is also possible to rename variables when using `select`. Here are two examples.
+
+```{r}
+select(flights, month, origin, dest)
+select(flights, month, origin, destination = dest)
+```
+
+Columns to be selected can also be specified using `start:end` to specify all columns from the column named `start` to the column named `end`. In addition a minus sign before the specified columns indicates that all except those columns should be selected. 
+
+**Use select to return a data frame with the variables representing departure time, departure delay, arrival time, arrival delay, origin, and destination.**
+
+```{r}
+##Select the columns here
+select(flights,dep_time,dep_delay,arr_time,arr_delay,origin,dest)
+```
+
+The `mutate` function provides a simple way to create new columns which are functions of exisiting columns. 
+
+```{r}
+glimpse(mutate(flights,
+  gain = arr_delay - dep_delay,
+  speed = distance / air_time * 60))
+```
+
+**Create two new columns, one which has the total gain as above, and another which has the gain per hour, i.e, the gain divided by the air time in hours.**
+
+```{r}
+#Create the new columns here.
+mutate(flights,gain=arr_delay-dep_delay,gainperhour=gain/air_time)
+```
+
+The `summarize` function returns a function of one or more columns. 
+
+```{r}
+summarize(flights,
+  mean_dep_delay = mean(dep_delay, na.rm = TRUE), mean_arr_delay = mean(arr_delay, na.rm = TRUE))
+```
+

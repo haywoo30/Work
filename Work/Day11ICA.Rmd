@@ -1,0 +1,202 @@
+---
+title: "Day 11 in-class activity"
+author: "Vince Melfi"
+date: "2/12/2020"
+output:
+  html_document:
+    number_sections: yes
+    theme: cerulean
+#    toc: yes
+#    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = NA)
+```
+
+# Introduction and the data
+
+Data sets typically need to be cleaned, reshaped, and otherwise manipulated. While it is possible to do this work using only base R functions, the `tidyr` and `dplyr` packages streamline the process, and are essential for a data scientist to know. 
+
+**Turn in (to D2L) whatever you have completed by the end of this class period.**
+
+We will use the `gapMinder3` data frame from the Day 10 in-class activity. To be sure we are all using the same version, the data frame is read in below. In addition, it is filtered to include only years from 1901 on.
+
+```{r, warning = FALSE, message=FALSE}
+gapMinder3 <- read.csv("https://raw.githubusercontent.com/vfmelfi/STT180SS20/master/gapMinder3.csv", header=TRUE, stringsAsFactors  = FALSE)
+library(rlang)
+library(tidyverse)
+gapMinder3 <- as_tibble(gapMinder3)
+gapMinder3 <- dplyr::filter(gapMinder3, year > 1900)
+gapMinder3
+```
+
+
+Here is the R code that was used to create the `gapMinder3` data frame. You should have used similar code in the Day 10 ICA, although for example you might have used different names for the CSV files, or the intermediate data frames. **I did make two changes: I used a package called `countrycode` to add the `continent` column, and converted the data frame into a tibble.**
+
+```{r, echo=TRUE, eval = FALSE}
+gmLifeExp <- read.csv("life_expectancy_years.csv", header = TRUE, stringsAsFactors = FALSE, check.names = FALSE)
+gmFertility <- read.csv("children_per_woman_total_fertility.csv", header=TRUE, stringsAsFactors = FALSE, check.names = FALSE)
+gmIncome <- read.csv("income_per_person_gdppercapita_ppp_inflation_adjusted.csv", header=TRUE, stringsAsFactors = FALSE, check.names = FALSE)
+gmPopulation <- read.csv("data_quality_population.csv", header=TRUE, stringsAsFactors = FALSE, check.names = FALSE)
+gmCo2Emissions <- read.csv("co2_emissions_tonnes_per_person.csv", header=TRUE, stringsAsFactors = FALSE, check.names = FALSE)
+
+library(tidyverse)
+
+longLifeExp <- pivot_longer(gmLifeExp, colnames(gmLifeExp)[-1], names_to = "year", values_to = "lifeExpect")
+longLifeExp$year <- as.numeric(longLifeExp$year)
+
+longFertility <- pivot_longer(gmFertility, colnames(gmFertility)[-1], names_to = "year", values_to = "fertility")
+longFertility$year <- as.numeric(longFertility$year)
+
+longPopulation <- pivot_longer(gmPopulation, colnames(gmPopulation)[-1], names_to = "year", values_to = "Population")
+longPopulation$year <- as.numeric(longPopulation$year)
+
+longIncome <- pivot_longer(gmIncome, colnames(gmIncome)[-1], names_to = "year", values_to = "Income")
+longIncome$year <- as.numeric(longIncome$year)
+
+longCo2Emissions <- pivot_longer(gmCo2Emissions, colnames(gmCo2Emissions)[-1], names_to = "year", values_to = "co2Emissions")
+longCo2Emissions$year <- as.numeric(longCo2Emissions$year)
+
+gapMinder3 <- inner_join(longLifeExp, longFertility)
+gapMinder3 <- inner_join(gapMinder3, longPopulation)
+gapMinder3 <- inner_join(gapMinder3, longIncome)
+gapMinder3 <- inner_join(gapMinder3, longCo2Emissions)
+install.packages("countrycode")
+library(countrycode)
+
+gapMinder3$continent <- countrycode(gapMinder3$country, origin = "country.name", destination = "continent")
+
+gapMinder3 <- as_tibble(gapMinder3)
+```
+
+The `tidyverse` package, which is loaded above, loads `dplyr` and `tidyr` along with several other related packages. If you are interested in which packages are loaded by `tidyverse` use `tidyverse_packages()`.
+
+This ICA draws from the Stat 545 notes by Jenny Bryan at [https://stat545.com/](https://stat545.com/), but uses a different data set, among other differences.
+
+Since we will be making many changes, we will create a copy of the `gapMinder3` data set to keep the original unchanged.
+
+```{r}
+gm <- gapMinder3
+gm
+```
+
+# Adding or changing columns
+
+The function `mutate()` can add, modify, or remove columns. For example, the code below changes population to be measured in millions of people. The second line of code uses the pipe operator `%>%` to do the same thing as the first line. In this case, neither syntax is particularly preferable. The output of the third line of code reminds us that the previous two lines did NOT assign their result to `gm` so it remains unchanged.
+
+```{r}
+glimpse(mutate(gm, Population = Population/1000000))
+glimpse(gm %>% mutate(Population = Population/1000000))
+glimpse(gm)
+```
+
+(@) Add a column `totalGDP` to `gm` that gives the total GDP. The Income column gives GDP per capita. Use both the "unpiped" and "piped" syntax. Unlike the code above, your code should change the object `gm`.
+
+```{r}
+mutate(gm,GDP = as.numeric(Population*Income))
+```
+
+
+(@) Add a column `popChange` to `gm` that gives the change in population in the preceding year. (Use the %>% syntax.) So for example the entry corresponding to the year 1995 and the country Canada should be the change in population from 1994 to 1995. You will find the `diff()` function useful. You might want to use `diff` on a simple, small vector to see what it returns. Again, your code should change the object `gm`.
+
+# Ordering row-wise using `arrange()`
+
+Here are the first 10 rows of `gm`:
+
+```{r}
+glimpse(gm %>% mutate(popChange = c(NA, diff(gm$Population))))
+print(gm, n=10)
+```
+
+It seems that `gm` is ordered by country, then by year. 
+
+Next `arrange()` is used to order by year and then by income, with income from largest to smallest..
+
+```{r}
+gm %>% arrange(year, desc(Income))
+```
+
+(@) Use `filter()` and `arrange()` and a pipe to return the data only for 1981, and only for countries in the continent "Americas" sorted first by life expectancy (from largest to smallest) and then by population (from smallest to largest). You should see something like this:
+
+```{r}
+arrange(gm %>% filter(continent=="Americas"&year==1981),desc(lifeExpect),Population)
+```
+
+
+![](https://www.stt.msu.edu/~melfi/STT180SS20/graphics/Day11Image1.png)
+
+
+
+(@) Add a call to `select()` so that only the year, country, life expectancy, and population are returned. In this case also be sure that all the countries are displayed. You will probably find the `print()` function useful here. Ideally you will tell `print()` precisely how many rows to print. You should see something like this:
+
+```{r}
+select(gm,year,country,lifeExpect,Population)
+```
+
+
+![](https://www.stt.msu.edu/~melfi/STT180SS20/graphics/Day11Image2.png)
+
+
+# Using `group_by()` and `summarize()`
+
+The `summarize()` and `group_by()` functions provide a powerful way to extract summary statistics for a data set. 
+
+(@) Reproduce the output below giving the mean and median life expectancy for the  year 2000. (This can be done without using the `group_by()` function.)
+
+
+```{r}
+mean(subset(gm,gm$year==2000)$lifeExpect)
+median(subset(gm,gm$year==2000)$lifeExpect)
+```
+
+![](https://www.stt.msu.edu/~melfi/STT180SS20/graphics/Day11Image3.png)
+
+
+
+(@) Now give the mean and  median life expectancy by continent for years between 1980 and 1985 as below.
+
+![](https://www.stt.msu.edu/~melfi/STT180SS20/graphics/Day11Image4Fixed.png)
+
+```{r}
+gm_new <- subset(gm,gm$year <=1985 & gm$year >= 1980)
+summarize(group_by(gm_new,continent), mean = mean(lifeExpect), median = median(lifeExpect))
+```
+
+
+(@) Next return, for each year and for each continent, the country with the lowest life expectancy, displaying the country, the continent, the year, and the life expectancy.
+
+
+```{r}
+summarize(group_by(gm,country,year), lifeExpect = min(lifeExpect), continent = continent[which.min(lifeExpect)])
+```
+
+![](https://www.stt.msu.edu/~melfi/STT180SS20/graphics/Day11Image5.png)
+
+
+
+(@) Next add the country with the highest life expectancy, and arrange the display first by year, then by continent, then by life expectancy, as below.
+
+```{r}
+summarize(group_by(gm,country,year), lifeExpect = min(lifeExpect), continent = continent[which.min(lifeExpect)])
+```
+
+
+![](https://www.stt.msu.edu/~melfi/STT180SS20/graphics/Day11Image6.png)
+
+(@) Reproduce the following display, computes the five-year change in life expectancy, and displays the resulting data in order of the one-year change in life expectancy. (For this and the next question, you may want to consult Section 6.7.710 of R Programming for Data Sciences, which shows how to do this but with a slightly different data set.)
+
+![](https://www.stt.msu.edu/~melfi/STT180SS20/graphics/Day11Image7.png)
+
+
+
+(@) Do the same, but now with ten-year change in life expectancy.
+
+![](https://www.stt.msu.edu/~melfi/STT180SS20/graphics/Day11Image8.png)
+
+
+(@) Repeat the previous two questions, but this time arranging in descending order of the change in life expectancy. 
+
+(@) What do you notice about changes in life expectancy from the previous four questions?

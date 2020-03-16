@@ -1,0 +1,108 @@
+---
+title: "STT 180 Day 12 in-class activity part 2"
+author: "Vince Melfi"
+date: "2/17/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = NA)
+```
+
+
+## Introduction
+
+Today we practice with functions. This document is adapted from a handout from Cozma Shalizi. Turn this in to D2L.
+
+## Pareto cumulative distribution function
+
+The Pareto family of distributions is parameterized by $\alpha > 1$ and $x_0 \geq  1$ and has cumulative distribution function
+
+\[
+F(x) = \begin{cases}
+0 & x < x_0\\
+1 - \left(\frac{x_0}{x} \right)^{\alpha - 1} & x \geq x_0.
+\end{cases}
+\]
+
+For example with $x_0 = 1$ and $\alpha = 3$ the Pareto cumulative distribution function is
+
+\[
+F(x) = \begin{cases}
+0 & x < 1\\
+1 - \left(\frac{1}{x} \right)^{2} & x \geq 1.
+\end{cases}
+\]
+
+So for example if $\alpha = 2.3$ and $x_0 = 6000$ then the value of this function at $x = 6700$ is
+
+```{r}
+1 - (6000/6700)^(2.34 - 1)
+```
+
+and if $\alpha = 3.5$ and $x_0 = 1$ then the value of the function at $x = 1.3$ is
+
+```{r}
+1 - (1/1.3)^(3.5 - 1)
+```
+
+(@) Write an R function called `paretoCDF` that takes as arguments a length one numerical vector `alpha`, a length one numerical vector `x0`, and a numerical vector  `x` of length one or greater, and returns the cdf of the  Pareto distribution with parameters `alpha` and `x0` at `x`. Do not use any conditional statements such as `if()` in writing the function. For testing purposes, your function should produce output that agrees with what's shown below.
+
+
+```{r}
+paretoCDF <- function(alpha,x0,x){
+  x[x<x0] = x0
+  fx <- 1-(x0/x)^(alpha-1)
+  print(fx)
+}
+paretoCDF(2,1,seq(0,20,length.out=20))
+```
+
+
+![](https://www.stt.msu.edu/~melfi/STT180SS20/graphics/Day12Image1.png)
+The function `stat_function()` helps to plot functions. Here is a quick example.
+
+```{r}
+testFun <- function(r = 2, m = 1, x){
+  out <- m*x^r -m
+  return(out)
+}
+
+library(ggplot2)
+
+ggplot(data = data.frame(x = c(-5, 5)), aes(x)) + stat_function(fun = testFun, args = list(r = 4, m = 2))
+```
+
+(@) Use `stat_function()` from `ggplot2` to draw three Pareto cdfs on the same set of axes, using a different color for each of the cdfs.
+
++ $\alpha = 2$, $x_0 = 1$
++ $\alpha = 3.2$, $x_0 = 1$
++ $\alpha = 4$, $x_0 = 1$
+```{r}
+```
+
+
+
+
+
+
+
+
+## Pareto quantile function
+
+We can think of the cumulative distribution fuction answering the question, "For a specific value of $x$, what proportion of the data are less than or equal to $x$." The quantile function is, roughly speaking, the inverse of the cumulative distribution function. It, again roughly speaking, answers the question, "For a specific value $p$ between $0$ and $1$, what value of $x$ has a proportion of exactly $p$ of the data less than $x$. 
+
+(The words "roughly speaking" are included because in some cases cumulative distribution functions are constant over certain intervals, and so don't actually have an inverse function. We won't concern ourselves with that possibility right now.)
+
+(@) (This is a math question, not an R question.) Show that the quantile function $Q$ for a Pareto distribution with parameters $\alpha$ and $x_0$ is given by
+
+\[
+Q(p) = Q(p, \alpha, x_0) = {x_0}{(1-p)^{-\frac{1}{\alpha - 1}}} \quad\text{for}\quad 0 < p < 1.
+\]
+
+(@) Write a function `paretoQuantile` with arguments `alpha`, `x0`, and `p` which returns the Pareto quantile function evaluated at `p`. Here `p` is a vector of length at least one, all of its values being between 0 and 1. For testing purposes, your function produce output that agrees with what's shown below.
+
+
+![](https://www.stt.msu.edu/~melfi/STT180SS20/graphics/Day12Image2.png)
+
+
