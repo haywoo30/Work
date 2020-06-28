@@ -11,21 +11,16 @@ output:
 knitr::opts_chunk
 ```
 
-This Homework is due on **Friday, February 21, 2020 on or before 11 pm.**
-
 The dataset contains information about births in the United States. The full data set is from the Centers for Disease Control. The data for this homework assignment is a "small" sample (chosen at random) of slightly over one million records from the full data set. The data for this homework assignment also only contain a subset of the variables in the full data set. 
 
 
 ## Setting up
 
-Load `tidyverse`, which includes `dplyr`, `ggplot2`, `tidyr`, and other packages, and the load `knitr. 
 
 ```{r echo=FALSE}
 library(tidyverse)
 library(knitr)
 ```
-
-Read in the data and convert the data frame to a tibble.
 
 ```{r echo=FALSE}
 birth_data <- read.csv("BirthData.csv", header = TRUE)
@@ -53,8 +48,6 @@ Variable | Description
 
 ## Data structure and wrangling
 
-For both of Questions 1 and 2 you should show the R code used and the output of the  `str` and`glimpse` functions applied to the data frame. Use of dplyr functions and the pipe operator is highly recommended.
-
 ### Question 1
 
 <style>
@@ -62,7 +55,6 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Create a variable called `region` in the data frame `birth_data` which takes the values `Northeast`, `Midwest`, `South`, and `West`.
 
 </div>
 
@@ -107,9 +99,6 @@ birth_data$region[birth_data$state %in% West] = "West"
 div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
-
-Create a variable in `birth_data` called `state_color` which takes the values `red`, `blue`, and `purple`, using the following divisions. 
-
 </div>
 
 ##### Red:
@@ -192,7 +181,6 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Count the number of missing values in each variable in the data frame.
 
 </div>
 
@@ -212,9 +200,6 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Use `group_by` and `summarize` to count the number of missing values of the two variables, `state` and `child_race`, for each year, and to also count the total number of observations per year. 
-
-Are there particular years when these two variables are either not available, or of limited availability?
 
 </div>
 
@@ -230,7 +215,6 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Create the following data frame which gives the counts, the mean weight of babies and the mean age of mothers for the six levels of `plurality`. Comment on what you notice about the relationship of plurality and birth weight, and the relationship of plurality and age of the mother.
 
 </div>
 
@@ -246,7 +230,6 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Create a data frame which gives the counts, the mean weight of babies and the mean age of mothers for each combination of the four levels of `state_color` and the two levels of `is_male`. 
 </div>
 
 ```{r Q6}
@@ -256,15 +239,11 @@ data %>% group_by(is_male,state_color) %>%
 
 ## Data Visualisation:
 
-Combine `dplyr`with `ggplot2` to create graphical displays of the data. Use `filter`, `group_by`, and `summarize` build the required data frame.
-
 ### Question 1
 <style>
 div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
-
-Create a plot of mean age of mother versus year, which includes separate lines for each of the four regions of the country. (Don't include data for which the region is missing.) The graphic should look like the one given in the html output. 
 
 </div>
 
@@ -284,7 +263,6 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Create a graphic of mean age of mother versus year, which includes separate lines for each of the three values of `state_color`. (Don't include data for which `state_color` is missing.) The graphic should look like the one given in the html output. Notice that the colors are different from the default colors. 
 
 ```{r DV Q2}
 mean_info2 <- data %>% group_by(year,state_color) %>%
@@ -299,8 +277,6 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Create a graphic of mean weight of the child versus year, which includes separate lines for the two top race categories, white and black. The graphic should look like the one given in the html output. Notice that the legend is different from the default legend. You'll want to investigate `scale_color_discrete` to change the legend.
-</div>
 
 ```{r DV Q3}
 mean_weight3 <- data %>% filter(child_race ==  1| child_race == 2) %>% group_by(child_race,year) %>% summarize(mean_weight = mean(weight_pounds, na.rm = TRUE))
@@ -315,65 +291,9 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
 
-Create a graphic showing side-by-side boxplots of the age of the mother for the four regions. The graphic should look like the one given in the html output.
-</div>
-
 ```{r DV Q4}
 attach(data)
 
 ggplot(na.omit(data),aes(region,mother_age)) + geom_boxplot()
 
 ```
-
-
-
-## Essential details {.tabset .tabset-fade .tabset-pills}
-
-### Deadline and submission
-
-The deadline to submit Homework 3 is **11:00pm on Friday, 21 February, 2020.** 
-Submit your work by uploading your Rmd and html file through D2L. Late work will not be accepted except under certain extraordinary circumstances.
-
-
-### Help
-
-- Post general questions in the HW3 discussion board forum. If you are trying to get help on a code error, explain your error in detail
-
-- Feel free to visit us in office hours, use the help room or make an appointment.
-
-- Communicate with your classmates, but do not share snippets of code.
-
-- The instructional team will not answer any questions within the first 24 hours of this homework being assigned, and we will not answer any questions after 6 P.M of the due date.
-
-### Academic integrity
-
-This is an individual assignment. You may discuss ideas, how to debug code, or how to approach a problem with your classmates.You may also post your general questions in the HW3 forum in D2L.But you may not copy-and-paste another individual's code from this class. As a reminder, below is the policy on sharing and using other's code.
-
->Similar reproducible examples (reprex) exist online that will help you answer 
-many of the questions posed on in-class assignments, pre-class assignments, 
-homework assignments, and midterm exams. Use of these resources is allowed 
-unless it is written explicitly on the assignment. You must always cite any 
-code you copy or use as inspiration. Copied code without citation is 
-plagiarism and will result in a 0 for the assignment.
-
-
-### Grading
-
-Use the R Markdown blank file that is provided. If you want you can use your own formatting. Self-formatting is at your discretion but is graded. Use the
-in-class assignments and resources available online for inspiration. Another 
-useful resource for R Markdown formatting is
-available at: https://holtzy.github.io/Pimp-my-rmd/
-
-**Topic**|**Points**
----------|----------:|
-Questions(total 10) | 70 
-R Markdown formatting and knitting | 10
-Communication of results| 10
-Code style| 10
-**Total**|**100**
-
-
-
-## Reference
-
-1. http://www.cdc.gov/nchs/data_access/Vitalstatsonline.htm
